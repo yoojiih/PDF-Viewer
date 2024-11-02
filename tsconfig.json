@@ -14,10 +14,22 @@
         "resolveJsonModule": true,
         "isolatedModules": true,
         "noEmit": true,
-        "jsx": "react-jsx"
+        "jsx": "react-jsx",
+        "paths": {
+            "@/*": ["./src/*"],
+            "@public/*": ["./public/*"]
+        }
+        // "baseUrl": "src", // 기본 경로를 src로 설정
+        // "paths": {
+        //     "@/*": ["*"],
+        //     "@public/*": ["./public/*"]
+        // }
     },
     "include": [
         "src",
-        "pdfjs-types.d.ts" // 추가한 타입 선언 파일 경로
+        "pdfjs-types.d.ts", // 추가한 타입 선언 파일 경로
+        "custom.d.ts", // 추가한 타입 선언 파일 포함
+        "./src/assets/**/**/*.scss",
+        "images.d.ts"
     ]
 }

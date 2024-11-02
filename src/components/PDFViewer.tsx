@@ -1,94 +1,151 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import * as pdfjsLib from "pdfjs-dist";
-import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
-// Worker 설정
-
-pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
-
-type CanvasProps = {
-    width: number;
-    height: number;
-};
+import styled from "styled-components";
+// import pdfjsWorker from "pdfjs-dist/build/pdf.worker.mjs";
+// pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker;
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+).toString();
 
 type PDFViewerProps = {
     pdfPath: string;
+    file?: File;
 };
 
-const PDFViewer = ({ pdfPath }: PDFViewerProps) => {
-    console.log(pdfPath);
+const PDFViewer = ({ pdfPath, file }: PDFViewerProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [page, setPage] = useState<number>(1);
-
-    const getFileURL = (path: string) => {};
+    const [totalPages, setTotalPages] = useState<number>(0);
+    const [loading, setLoading] = useState<boolean>(false);
 
     const drawCanvas = useCallback(
-        ({ width, height }: CanvasProps) => {
-            if (!canvasRef.current) {
+        ({ width, height }: { width: number; height: number }) => {
+            const canvas = canvasRef.current;
+            if (!canvas) {
                 throw new Error("canvasRef가 없음");
             }
-            const canvas: HTMLCanvasElement = canvasRef.current;
             canvas.width = width;
             canvas.height = height;
 
             const context = canvas.getContext("2d");
-            if (context) {
-                console.log("contex 생성 성공!");
-                return context;
-            } else {
+            if (!context) {
                 throw new Error("canvas context가 없음");
             }
+            return context;
         },
         [canvasRef]
     );
 
     const renderPage = useCallback(
-        async (doc: pdfjsLib.PDFDocumentProxy) => {
-            const currentPage = await doc.getPage(page);
-            const viewport = currentPage.getViewport({ scale: 1.0 }); // each pdf has its own viewport
-            const context = drawCanvas({
-                width: viewport.width,
-                height: viewport.height,
-            });
+        async (doc: any, pageNum: number) => {
+            setLoading(true);
+            try {
+                const currentPage = await doc.getPage(pageNum);
+                const viewport = currentPage.getViewport({ scale: 1.0 });
+                const context = drawCanvas({
+                    width: viewport.width,
+                    height: viewport.height,
+                });
 
-            const renderContext = {
-                canvasContext: context,
-                viewport: viewport,
-            };
+                const renderContext = {
+                    canvasContext: context,
+                    viewport: viewport,
+                };
 
-            await currentPage.render(renderContext).promise;
-            console.log(`${page}로딩 성공`);
+                await currentPage.render(renderContext).promise;
+                console.log(`${pageNum} 로딩 성공`);
+            } catch (error) {
+                console.error(`페이지 ${pageNum} 로딩 실패`, error);
+            } finally {
+                setLoading(false);
+            }
         },
-        [page, drawCanvas]
+        [drawCanvas]
     );
 
     const getPDF = useCallback(
         async (pdfPath: string) => {
+            console.log("aㅓㄴ데:", pdfPath);
             try {
                 const loadingTask = pdfjsLib.getDocument(pdfPath);
                 const doc = await loadingTask.promise;
 
-                const pageNum = doc.numPages;
-                console.log(`document 로딩 성공: 전체 페이지 ${pageNum}`);
+                console.log("Document object:", doc); // 추가된 디버깅 로그
 
-                renderPage(doc);
-                console.log("pdf 로딩 성공이라네");
-            } catch (e) {
-                console.log("pdf 로딩 실패!");
-                console.log(e);
+                if (doc && typeof doc.getPage === "function") {
+                    const numPages = doc.numPages;
+                    setTotalPages(numPages);
+                    console.log(`document 로딩 성공: 전체 페이지 ${numPages}`);
+                    await renderPage(doc, page);
+                    console.log("pdf 로딩 성공");
+                } else {
+                    console.error("문서 객체가 올바르지 않습니다.", doc);
+                }
+            } catch (error) {
+                console.error("pdf 로딩 실패!", error);
             }
         },
-        [renderPage]
+        [renderPage, page]
     );
 
     useEffect(() => {
         getPDF(pdfPath);
-    }, [pdfPath]);
+    }, [pdfPath, getPDF]);
+
+    useEffect(() => {
+        const loadPage = async () => {
+            if (totalPages > 0) {
+                await renderPage(pdfPath, page);
+            }
+        };
+        loadPage();
+    }, [page, totalPages, pdfPath, renderPage]);
+
+    const handleNextPage = () => {
+        if (page < totalPages) {
+            setPage((prev) => prev + 1);
+        }
+    };
+
+    const handlePrevPage = () => {
+        if (page > 1) {
+            setPage((prev) => prev - 1);
+        }
+    };
 
     return (
-        <div>
-            <canvas ref={canvasRef} style={{ height: "100vh" }} />
-        </div>
+        <Wrapper>
+            <canvas
+                ref={canvasRef}
+                style={{ width: "100%", height: "100vh" }}
+            />
+            <div>
+                <button
+                    onClick={handlePrevPage}
+                    disabled={page <= 1 || loading}
+                >
+                    Previous
+                </button>
+                <button
+                    onClick={handleNextPage}
+                    disabled={page >= totalPages || loading}
+                >
+                    Next
+                </button>
+                <p>
+                    Page {page} of {totalPages}
+                </p>
+                {loading && <p>Loading...</p>}
+            </div>
+        </Wrapper>
     );
 };
+
+const Wrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+`;
 
 export default PDFViewer;
