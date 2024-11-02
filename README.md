@@ -1,46 +1,43 @@
-# Getting Started with Create React App
+# PDF 뷰어 애플리케이션
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+PDF 뷰어 애플리케이션 만들어 PDF 파일의 테이블 파싱 구현
 
-## Available Scripts
+#### 진행 기간: 2024.10.29 ~ 2024.11.02
 
-In the project directory, you can run:
+### ⚙️ 실행 방법
 
-### `npm start`
+**설치 및 실행**
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```
+$ npm install
+$ npm start
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+### 📂 폴더 구조
 
-### `npm test`
+<!-- 변경 필요 -->
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+📦src
+  ├── 📄index.css
+  ├── 📄index.tsx
+  ├── 📄App.tsx
+  ├── 📄App.css
+  ├── 📂assets
+  ├── 📂components
+  └── 📂pages
+```
 
-### `npm run build`
+<br/>
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### 📖 서비스 소개
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+React.js, Node.js, PDF.js를 이용하여 웹 애플리케이션에서 PDF 파일을 뷰잉해서, 의안 파일의 신구조문을 배열 형태로 파싱해 표 형태로 나타내주는 서비스
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+#### 기능 구현
 
-### `npm run eject`
+-   PDF 파일 업로드
+-   업로드 된 PDF 파일 뷰잉
+-   업로드 된 PDF 파일을 배열 형태로 파싱해 표 형태로 구현
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+<br/>
