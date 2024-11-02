@@ -11,9 +11,10 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 type PDFViewerProps = {
     pdfPath: string;
     file?: File;
+    handlePdfTextChange?: any;
 };
 
-const PDFViewer = ({ pdfPath, file }: PDFViewerProps) => {
+const PDFViewer = ({ pdfPath, handlePdfTextChange, file }: PDFViewerProps) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const [page, setPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(0);
@@ -66,12 +67,9 @@ const PDFViewer = ({ pdfPath, file }: PDFViewerProps) => {
 
     const getPDF = useCallback(
         async (pdfPath: string) => {
-            console.log("aㅓㄴ데:", pdfPath);
             try {
                 const loadingTask = pdfjsLib.getDocument(pdfPath);
                 const doc = await loadingTask.promise;
-
-                console.log("Document object:", doc); // 추가된 디버깅 로그
 
                 if (doc && typeof doc.getPage === "function") {
                     const numPages = doc.numPages;
@@ -79,6 +77,16 @@ const PDFViewer = ({ pdfPath, file }: PDFViewerProps) => {
                     console.log(`document 로딩 성공: 전체 페이지 ${numPages}`);
                     await renderPage(doc, page);
                     console.log("pdf 로딩 성공");
+                    let pdfText = "";
+                    for (let i = 1; i <= doc.numPages; i++) {
+                        const page = await doc.getPage(i);
+                        const content = await page.getTextContent();
+                        const pageText = content.items
+                            .map((item: any) => item.str)
+                            .join(" ");
+                        pdfText += pageText + "\n"; // 각 페이지의 텍스트를 이어 붙임
+                    }
+                    handlePdfTextChange(pdfText);
                 } else {
                     console.error("문서 객체가 올바르지 않습니다.", doc);
                 }

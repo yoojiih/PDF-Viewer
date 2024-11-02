@@ -1,42 +1,40 @@
 import React, { useEffect, useState } from "react";
 import styled from "styled-components";
-
+import * as pdfjsLib from "pdfjs-dist";
+pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
+    "pdfjs-dist/build/pdf.worker.min.mjs",
+    import.meta.url
+).toString();
 interface BasicFileUploadProps {
     file: File;
     setFile: any;
-    fileSize: number;
     title?: string;
-    imgSize?: string;
-    width?: string;
 }
 
 Uploader.defaultProps = {
     file: null,
     setFile: null,
-    fileSize: 50,
     title: "타이틀을 입력해주세요",
-    imgSize: "권장 사이즈",
     fileType: [],
-    width: "540px",
 };
 
 function Uploader({
     file,
     setFile,
-    fileSize,
     title,
-    imgSize,
-    width,
 }: BasicFileUploadProps): React.ReactElement {
     const inputRef: any = React.useRef(null);
     const [acceptFileType, setAcceptFileType] = useState("");
 
     const [fileName, setFileName] = useState(file ? file.name : title);
 
+    const [text, setText] = useState("");
+    const [error, setError] = useState("");
+
     const handleChange = function (e: any) {
         e.preventDefault();
         if (e.target.files && e.target.files[0]) {
-            handleFiles(e.target.files);
+            handleFiles(e.target.files, e.target.files[0]);
         }
     };
 
@@ -46,7 +44,7 @@ function Uploader({
         inputRef.current.click();
     };
 
-    const handleFiles = async (files: any) => {
+    const handleFiles = async (files: any, fileee: any) => {
         // if (!validateFile(files[0])) return;
         setFileName(files[0].name);
         setFile(files[0]);
